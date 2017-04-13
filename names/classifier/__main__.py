@@ -1,8 +1,11 @@
 import torch
 from torch.autograd import Variable
 
-from names.classifier.data import read_data, n_letters, letter_to_tensor, line_to_tensor, random_training_pair
-from names.classifier.rnn import RNN
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+
+from names.classifier.data import read_data, n_letters
+from names.classifier.rnn import RNN, train_all_epochs, confusion_matrix, predict
 
 all_categories, all_lines = read_data('../../data/names')
 n_categories = len(all_categories)
@@ -10,12 +13,41 @@ n_categories = len(all_categories)
 n_hidden = 128
 rnn = RNN(n_letters, n_hidden, n_categories)
 
-input = Variable(line_to_tensor('Albert'))
-hidden = Variable(torch.zeros(1, n_hidden))
+criterion = torch.nn.NLLLoss()
 
-output, next_hidden = rnn(input[0], hidden)
-print(output)
+learning_rate = 0.005 # If you set this too high, it might explode. If too low, it might not learn
+optimizer = torch.optim.SGD(rnn.parameters(), lr=learning_rate)
 
-for i in range(10):
-    category, line, category_tensor, line_tensor = random_training_pair(all_categories, all_lines)
-    print('category =', category, '/ line =', line)
+all_losses = train_all_epochs(rnn, criterion, optimizer, all_categories, all_lines,
+                              n_epochs=100000, print_every=5000, plot_every=1000)
+plt.figure()
+plt.plot(all_losses)
+
+confusion = confusion_matrix(rnn, all_categories, all_lines)
+
+# Set up plot
+fig = plt.figure()
+ax = fig.add_subplot(111)
+cax = ax.matshow(confusion.numpy())
+fig.colorbar(cax)
+
+# Set up axes
+ax.set_xticklabels([''] + all_categories, rotation=90)
+ax.set_yticklabels([''] + all_categories)
+
+# Force label at every tick
+ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
+ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+
+plt.show()
+
+
+def predict_name(name):
+    predict(rnn, all_categories, name)
+
+
+while True:
+    name = input("> ")
+    predict_name(name)
+
+
