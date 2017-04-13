@@ -1,11 +1,11 @@
+import math
 import time
 
-import math
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
-from names.classifier.data import random_training_pair, line_to_tensor
+from names.data import random_training_pair, line_to_tensor
 
 
 class RNN(nn.Module):

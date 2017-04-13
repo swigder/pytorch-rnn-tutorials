@@ -1,11 +1,9 @@
-import torch
-from torch.autograd import Variable
-
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import torch
 
-from names.classifier.data import read_data, n_letters
 from names.classifier.rnn import RNN, train_all_epochs, confusion_matrix, predict
+from names.data import read_data, n_letters
 
 all_categories, all_lines = read_data('../../data/names')
 n_categories = len(all_categories)
