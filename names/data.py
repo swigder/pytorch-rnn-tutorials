@@ -6,8 +6,9 @@ import random
 
 from torch.autograd import Variable
 
-all_letters = string.ascii_letters + " .,;'"
-n_letters = len(all_letters)
+all_letters = string.ascii_letters + " .,;'-"
+n_letters = len(all_letters) + 1  # Plus EOS marker
+EOS = n_letters - 1
 
 
 # Turn a Unicode string to plain ASCII, thanks to http://stackoverflow.com/a/518232/2809427
@@ -39,30 +40,3 @@ def read_data(base_dir):
         category_lines[category] = lines
 
     return all_categories, category_lines
-
-
-# Just for demonstration, turn a letter into a <1 x n_letters> Tensor
-def letter_to_tensor(letter):
-    tensor = torch.zeros(1, n_letters)
-    letter_index = all_letters.find(letter)
-    tensor[0][letter_index] = 1
-    return tensor
-
-
-# Turn a line into a <line_length x 1 x n_letters>,
-# or an array of one-hot letter vectors
-def line_to_tensor(line):
-    tensor = torch.zeros(len(line), 1, n_letters)
-    for li, letter in enumerate(line):
-        letter_index = all_letters.find(letter)
-        tensor[li][0][letter_index] = 1
-    return tensor
-
-
-def random_training_pair(categories, lines):
-    category = random.choice(categories)
-    line = random.choice(lines[category])
-    category_tensor = Variable(torch.LongTensor([categories.index(category)]))
-    line_tensor = Variable(line_to_tensor(line))
-    return category, line, category_tensor, line_tensor
-
