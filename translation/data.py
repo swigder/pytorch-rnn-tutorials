@@ -1,6 +1,9 @@
 import re
 import unicodedata
 
+import torch
+from torch.autograd import Variable
+
 SOS_token = 0
 EOS_token = 1
 
@@ -98,3 +101,18 @@ def prepare_data(lang1, lang2, reverse=False):
     print(output_lang.name, output_lang.n_words)
     return input_lang, output_lang, pairs
 
+
+def indexes_from_sentence(lang, sentence):
+    return [lang.word2index[word] for word in sentence.split(' ')]
+
+
+def variable_from_sentence(lang, sentence):
+    indexes = indexes_from_sentence(lang, sentence)
+    indexes.append(EOS_token)
+    return Variable(torch.LongTensor(indexes).view(-1, 1))
+
+
+def variables_from_pair(pair, input_lang, output_lang):
+    input_variable = variable_from_sentence(input_lang, pair[0])
+    target_variable = variable_from_sentence(output_lang, pair[1])
+    return (input_variable, target_variable)
